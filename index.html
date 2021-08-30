@@ -1,7 +1,7 @@
 <!--
  * @Author: your name
  * @Date: 2021-08-30 16:08:16
- * @LastEditTime: 2021-08-30 17:42:02
+ * @LastEditTime: 2021-08-30 23:00:50
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /canvas-demo-1/index.html
@@ -24,30 +24,54 @@
 		let canvas = document.getElementById("canvas");
 		canvas.width = document.documentElement.clientWidth
 		canvas.height = document.documentElement.clientHeight
-		//画线
 		let ctx = canvas.getContext("2d");
-
-		let painting = false
-
 		ctx.fillStyle = "black";
-		ctx.strokeStyle = "none"
+		ctx.strokeStyle = 'none'
+		ctx.lineWidth = 10;
+		ctx.lineCap = "round";
 
-		canvas.onmousedown = (e) => {
-			painting = true
+		function drawLine(x1, y1, x2, y2) {
+			ctx.beginPath();
+			ctx.moveTo(x1, y1);
+			ctx.lineTo(x2, y2);
+			ctx.stroke();
+			// stroke是描边
+			// fill是填充
 		}
 
-		canvas.onmousemove = (e) => {
-			if (painting === true) {
-				ctx.beginPath();
-				ctx.arc(e.clientX, e.clientY, 10, 0, 2 * Math.PI);
-				ctx.stroke();
-				ctx.fill();
-			} else {
-				console.log('什么都不做')
+		let painting = false
+		let last
+
+		var isTouchDevice = 'ontouchstart' in
+			document.documentElement;
+		if (isTouchDevice) {
+			canvas.ontouchstart = (e) => {
+				let x = e.touches[0].clientX
+				let y = e.touches[0].clientY
+				last = [x, y]
+			}
+			canvas.ontouchmove = (e) => {
+				let x = e.touches[0].clientX
+				let y = e.touches[0].clientY
+				drawLine(last[0], last[1], x, y)
+				last = [x, y]
+			}
+		} else {
+			canvas.onmousedown = (e) => {
+				painting = true
+				last = [e.clientX, e.clientY]
 			}
 
-			canvas.onmouseup = () => {
-				painting = false
+			canvas.onmousemove = (e) => {
+				if (painting === true) {
+					drawLine(last[0], last[1], e.clientX, e.clientY)
+					last = [e.clientX, e.clientY]
+				}
+
+				canvas.onmouseup = () => {
+					painting = false
+				}
+
 			}
 		}
 
